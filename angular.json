@@ -31,9 +31,9 @@
 						],
 						"styles": [
 							"src/styles.scss",
-							"node_modules/bootstrap/dist/css/bootstrap.css"
+							"node_modules/bootstrap/dist/css/bootstrap.min.css"
 						],
-						"scripts": ["node_modules/bootstrap/dist/js/bootstrap.bundle.js"]
+						"scripts": []
 					},
 					"configurations": {
 						"production": {
@@ -61,6 +61,7 @@
 				},
 				"serve": {
 					"builder": "@angular-devkit/build-angular:dev-server",
+
 					"configurations": {
 						"production": {
 							"buildTarget": "chartApp:build:production"
