@@ -1,0 +1,10 @@
+@if(dataSlice(); as data) {
+<h5 class="text-center mb-0 ">Order time : {{data.time}}</h5>
+<canvas class="p-0" baseChart [data]="barChartData" [options]="barChartOptions" [type]="barChartType">
+</canvas>} @else {
+<div class="d-flex justify-content-center h-100 ">
+  <div class="spinner-border m-5 " role="status" [style.width.px]="150" [style.height.px]="150">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
+}
