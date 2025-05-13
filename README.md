@@ -2,6 +2,11 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.11.
 
+### Use :
+
+- Bootstrap v 5.3
+- Chart.js as ng2-charts [-> ng2-charts](https://github.com/valor-software/ng2-charts)
+
 ## Development server
 
 To start a local development server, run:
