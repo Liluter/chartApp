@@ -13,6 +13,7 @@ export class ChartComponent implements AfterViewInit {
   @ViewChild(BaseChartDirective) chart: BaseChartDirective<'bar'> | undefined;
   private _orderService = inject(OrdersService)
   readonly dataSlice: Signal<SliceData | null> = this._orderService.sliceData
+  readonly currentFrame = this._orderService.current
   public barChartOptions: ChartConfiguration<'bar'>['options'] = {
     responsive: true,
     aspectRatio: 16 / 6,
