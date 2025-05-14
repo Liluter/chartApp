@@ -140,7 +140,7 @@ export class OrdersService {
   private maxVolumeRange(data: OrderBookRecord) {
     const minVolume = [...this.bidData(data)].filter(el => el !== null).sort((a, b) => a - b)[0];
     const maxVolume = [...this.askData(data)].filter(el => el !== null).sort((a, b) => b - a)[0]
-    const theMax = Math.max(minVolume, maxVolume)
+    const theMax = Math.max(minVolume * -1, maxVolume)
     return theMax
   }
   public timeOnlyFormat(timeString: string | undefined, format: string = 'HH:mm:ss'): string {
