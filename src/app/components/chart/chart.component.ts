@@ -22,25 +22,29 @@ export class ChartComponent implements AfterViewInit {
       duration: 500,
       delay: 50
     },
+    scales: {
+
+    },
     plugins: {
       title: {
         display: false,
         text: 'Order book',
       },
+      legend: { position: 'chartArea' }
     },
   };
   public barChartType = 'bar' as const;
   public barChartData: ChartData<'bar'> = {
     labels: [],
     datasets: [{
-      label: 'Bid',
-      backgroundColor: '#cc3300',
-      data: [],
-    }, {
       label: 'Ask',
       data: [],
       backgroundColor: '#7093DB',
-    }],
+    }, {
+      label: 'Bid',
+      backgroundColor: '#cc3300',
+      data: [],
+    },],
   };
 
   ngAfterViewInit(): void {
@@ -52,24 +56,48 @@ export class ChartComponent implements AfterViewInit {
           x: {
             min: -data.maxVolumeRange,
             max: data.maxVolumeRange,
-          },
+            display: true,
+            title: {
+              display: true,
+              color: '#911',
+              text: 'Volume',
+              font: {
+                family: 'Times',
+                size: 20,
+                style: 'normal',
+                lineHeight: 1.2
+              }
+            }
+          }
+          ,
           y: {
             stacked: true,
+            title: {
+              display: true,
+              color: '#911',
+              text: 'Volume',
+              font: {
+                family: 'Times',
+                size: 20,
+                style: 'normal',
+                lineHeight: 1.2
+              }
+            }
           }
         }
       }
       this.barChartData = {
         labels: data.labelsData,
-        datasets: [
-          {
-            label: 'Bid',
-            backgroundColor: '#cc3300',
-            data: data.bidData,
-          }, {
-            label: 'Ask',
-            data: data.askData,
-            backgroundColor: '#7093DB',
-          }
+        datasets: [{
+          label: 'Ask',
+          data: data.askData,
+          backgroundColor: '#7093DB',
+        },
+        {
+          label: 'Bid',
+          backgroundColor: '#cc3300',
+          data: data.bidData,
+        },
         ],
       };
     }
@@ -88,25 +116,45 @@ export class ChartComponent implements AfterViewInit {
           x: {
             min: -data.maxVolumeRange,
             max: data.maxVolumeRange,
+            title: {
+              display: true,
+              text: 'Volume',
+              font: {
+                size: 20,
+                style: 'normal',
+                lineHeight: 1.2
+              },
+              padding: { top: 0, bottom: 0 },
+            }
           },
           y: {
             stacked: true,
+            title: {
+              display: true,
+              text: 'Price',
+              font: {
+                size: 20,
+                style: 'normal',
+                lineHeight: 1.2
+              },
+              padding: { top: 0, bottom: 0 },
+            }
           }
         }
       }
       this.barChartData = {
         ...this.barChartData,
         labels: data.labelsData,
-        datasets: [
-          {
-            label: 'Bid',
-            backgroundColor: '#cc3300',
-            data: data.bidData,
-          }, {
-            label: 'Ask',
-            data: data.askData,
-            backgroundColor: '#7093DB',
-          }
+        datasets: [{
+          label: 'Ask',
+          data: data.askData,
+          backgroundColor: '#7093DB',
+        },
+        {
+          label: 'Bid',
+          backgroundColor: '#cc3300',
+          data: data.bidData,
+        },
         ],
       };
       this.chart?.update();
@@ -121,21 +169,39 @@ export class ChartComponent implements AfterViewInit {
         animation: {
           duration: 0,
           delay: 0,
+        },
+        scales: {
+          ...this.barChartOptions?.scales,
+          x: {
+            min: -data.maxVolumeRange,
+            max: data.maxVolumeRange,
+            title: {
+              display: true,
+              text: 'Volume',
+              font: {
+                size: 20,
+                style: 'normal',
+                lineHeight: 1.2
+              },
+              padding: { top: 0, bottom: 0 },
+            }
+          },
+
         }
       }
       this.barChartData = {
         ...this.barChartData,
         labels: data.labelsData,
-        datasets: [
-          {
-            label: 'Bid',
-            backgroundColor: '#cc3300',
-            data: data.bidData,
-          }, {
-            label: 'Ask',
-            data: data.askData,
-            backgroundColor: '#7093DB',
-          }
+        datasets: [{
+          label: 'Ask',
+          data: data.askData,
+          backgroundColor: '#7093DB',
+        },
+        {
+          label: 'Bid',
+          backgroundColor: '#cc3300',
+          data: data.bidData,
+        },
         ],
       };
       this.chart?.update();
