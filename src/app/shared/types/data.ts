@@ -5,9 +5,11 @@ export type OrderBookRecord = {
 };
 
 export interface SliceData {
-  bidData: (number | null)[],
-  askData: (number | null)[],
-  labelsData: number[],
+  // bidData: (number | null)[],
+  bidData: { [k: string]: number },
+  // askData: ([number, number] | number | null)[] | Map<number, number>,
+  askData: { [k: string]: number },
+  labelsData: number[] | any,
   time: string,
   maxVolumeRange: number,
 }

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, inject, ViewChild } from '@angular/core';
 import { ChartComponent } from './components/chart/chart.component';
 import { Action } from './shared/types/data';
 import { NavbarComponent } from './components/nabar/navbar.component';
@@ -9,7 +9,6 @@ import { OrdersService } from './services/orders.service';
   imports: [ChartComponent, NavbarComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
-
 })
 export class AppComponent implements AfterViewInit {
   @ViewChild(ChartComponent) chartComponent: ChartComponent | undefined

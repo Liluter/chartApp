@@ -8,22 +8,23 @@ import { OrdersService } from '../../services/orders.service';
   selector: 'app-chart',
   imports: [BaseChartDirective],
   templateUrl: './chart.component.html',
+
 })
-export class ChartComponent implements AfterViewInit {
+export class ChartComponent {
   @ViewChild(BaseChartDirective) chart: BaseChartDirective<'bar'> | undefined;
   private _orderService = inject(OrdersService)
   readonly dataSlice: Signal<SliceData | null> = this._orderService.sliceData
   readonly currentFrame = this._orderService.current
   public barChartOptions: ChartConfiguration<'bar'>['options'] = {
     responsive: true,
-    aspectRatio: 16 / 6,
+    // aspectRatio: 16 / 6,
+    // aspectRatio: 1.2,
     indexAxis: 'y',
-    animation: {
-      duration: 500,
-      delay: 50
-    },
+    // animation: {
+    //   duration: 500,
+    //   delay: 50
+    // },
     scales: {
-
     },
     plugins: {
       title: {
@@ -34,74 +35,17 @@ export class ChartComponent implements AfterViewInit {
     },
   };
   public barChartType = 'bar' as const;
-  public barChartData: ChartData<'bar'> = {
-    labels: [],
+  public barChartData: ChartData<'bar', { [k: string]: number }> = {
     datasets: [{
       label: 'Ask',
-      data: [],
+      data: {},
       backgroundColor: '#7093DB',
     }, {
       label: 'Bid',
       backgroundColor: '#cc3300',
-      data: [],
+      data: {},
     },],
   };
-
-  ngAfterViewInit(): void {
-    const data = this.dataSlice()
-    if (data) {
-      this.barChartOptions = {
-        ...this.barChartOptions,
-        scales: {
-          x: {
-            min: -data.maxVolumeRange,
-            max: data.maxVolumeRange,
-            display: true,
-            title: {
-              display: true,
-              color: '#911',
-              text: 'Volume',
-              font: {
-                family: 'Times',
-                size: 20,
-                style: 'normal',
-                lineHeight: 1.2
-              }
-            }
-          }
-          ,
-          y: {
-            stacked: true,
-            title: {
-              display: true,
-              color: '#911',
-              text: 'Volume',
-              font: {
-                family: 'Times',
-                size: 20,
-                style: 'normal',
-                lineHeight: 1.2
-              }
-            }
-          }
-        }
-      }
-      this.barChartData = {
-        labels: data.labelsData,
-        datasets: [{
-          label: 'Ask',
-          data: data.askData,
-          backgroundColor: '#7093DB',
-        },
-        {
-          label: 'Bid',
-          backgroundColor: '#cc3300',
-          data: data.bidData,
-        },
-        ],
-      };
-    }
-  }
 
   public update(): void {
     const data = this.dataSlice()
@@ -109,11 +53,12 @@ export class ChartComponent implements AfterViewInit {
       this.barChartOptions = {
         ...this.barChartOptions,
         animation: {
-          duration: 500,
-          delay: 50
+          duration: 200,
+          delay: 0
         },
         scales: {
           x: {
+            stacked: true,
             min: -data.maxVolumeRange,
             max: data.maxVolumeRange,
             title: {
@@ -167,7 +112,7 @@ export class ChartComponent implements AfterViewInit {
       this.barChartOptions = {
         ...this.barChartOptions,
         animation: {
-          duration: 0,
+          duration: 300,
           delay: 0,
         },
         scales: {

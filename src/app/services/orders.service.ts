@@ -1,17 +1,22 @@
-import { computed, Injectable, Signal, signal, WritableSignal } from '@angular/core';
+import { computed, inject, Injectable, Signal, signal, WritableSignal } from '@angular/core';
 import { OrderBookRecord, SliceData } from '../shared/types/data';
 import data from './../shared/data.json'
 
 import { ChartComponent } from '../components/chart/chart.component';
-import { delay, Observable, of } from 'rxjs';
+import { delay, Observable, of, tap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ajax } from 'rxjs/ajax';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
 })
 export class OrdersService {
+  private Url = ""
+  private _http = inject(HttpClient)
   readonly dataArr: OrderBookRecord[] = data
   dataArr$: Observable<OrderBookRecord[]> = of(this.dataArr).pipe(takeUntilDestroyed(), delay(1000))
+
   readonly current = signal(1)
   private data: WritableSignal<OrderBookRecord[] | []> = signal([])
   readonly sliceData: Signal<SliceData | null> = computed(() =>
@@ -21,10 +26,14 @@ export class OrdersService {
   readonly playing = signal(false);
 
   constructor() {
+    this.allLabels()
     this.dataArr$.subscribe(data => {
       this.data.set(data);
       this.chartRef.update()
     })
+  }
+  getDataMarket(): Observable<OrderBookRecord[]> {
+    return this._http.get<OrderBookRecord[]>(this.Url)
   }
 
   first() {
@@ -80,7 +89,7 @@ export class OrdersService {
   }
 
   private getOne(record: OrderBookRecord) {
-    const labelsData = this.getLabels(record)
+    const labelsData = this.allLabels()
     const askData = this.askData(record)
     const bidData = this.bidData(record)
     const maxVolumeRange = this.maxVolumeRange(record)
@@ -111,35 +120,31 @@ export class OrdersService {
         }
 
         if (typeof bidPrice === 'number' && typeof bidSize === 'number') {
-          bidMap.set(bidPrice, bidSize);
+          bidMap.set(bidPrice, -bidSize);
         }
       }
-
       return { askMap, bidMap };
     } else return { askMap, bidMap }
   }
 
   private getLabels(data: OrderBookRecord | undefined) {
     if (data) {
-
       return [...Array.from(this.toAskBidMaps(data).bidMap).map(el => el[0]), ...Array.from(this.toAskBidMaps(data).askMap).map(el => el[0])].sort((a, b) => b - a)
     } else return []
   }
-  private askData(data: OrderBookRecord | undefined): (number | null)[] {
+  private askData(data: OrderBookRecord | undefined): { [k: string]: number } {
     if (data) {
-      return [...Array.from(this.toAskBidMaps(data).askMap).reverse().map(el => el[1]), ...Array.from(this.toAskBidMaps(data).bidMap).map(el => null)]
-
-    } else return []
+      return Object.fromEntries(this.toAskBidMaps(data).askMap)
+    } else return {}
   }
-  private bidData(data: OrderBookRecord | undefined): (number | null)[] {
+  private bidData(data: OrderBookRecord | undefined): { [k: string]: number } {
     if (data) {
-      return [...Array.from(this.toAskBidMaps(data).askMap).map(el => null), ...Array.from(this.toAskBidMaps(data).bidMap).map(el => el[1] * -1)]
-
-    } else return []
+      return Object.fromEntries(this.toAskBidMaps(data).bidMap)
+    } else return {}
   }
   private maxVolumeRange(data: OrderBookRecord) {
-    const minVolume = [...this.bidData(data)].filter(el => el !== null).sort((a, b) => a - b)[0];
-    const maxVolume = [...this.askData(data)].filter(el => el !== null).sort((a, b) => b - a)[0]
+    const minVolume: number = Object.values<number>(this.bidData(data)).sort((a: number, b: number) => a - b)[0]
+    const maxVolume: number = Object.values<number>(this.askData(data)).sort((a: number, b: number) => b - a)[0]
     const theMax = Math.max(minVolume * -1, maxVolume)
     return theMax
   }
@@ -162,6 +167,15 @@ export class OrdersService {
     formattedTime = formattedTime.replace('SSS', ms.substring(0, Math.min(ms.length, 3)));
     formattedTime = formattedTime.replace('SSSSSS', ms);
     return formattedTime;
+  }
+  allLabels() {
+    const newLabelsArr = this.dataArr.map(el => this.getLabels(el))
+    const flated = newLabelsArr.flat()
+    const sorted = flated.sort((a, b) => b - a)
+    const newSet = new Set(sorted)
+    const newLabels = Array.from(newSet)
+    const mappedSet = newLabels.map(l => l.toString())
+    return mappedSet
   }
 }
 
