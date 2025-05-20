@@ -18,6 +18,7 @@ export enum Action {
   PREV = 'prev',
   FIRST = 'first',
   PLAY = 'play',
+  SPEED = 'speed',
   STOP = 'stop',
   LAST = 'last',
   VOLUME = 'volume',

@@ -85,7 +85,7 @@ export class ChartComponent {
   }
 
   public animate(duration?: number): void {
-    const durationTime = duration ?? 1600
+    const durationTime = duration ?? 1000
     const data = this.dataSlice()
     if (data) {
       this.barChartOptions = {

@@ -11,7 +11,8 @@ export class NavbarComponent {
   private _orderService = inject(OrdersService)
   readonly action = Action
   readonly counter = this._orderService.current
-  readonly toggleVolume = this._orderService.volume
+  readonly toggleVolumeRange = this._orderService.volumeRangeToggle
+  readonly toggleSpeed = this._orderService.toggleSpeed
   clickHandler(event: Action) {
     this.clickEvent.emit(event)
   }

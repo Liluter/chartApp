@@ -48,6 +48,10 @@ export class AppComponent implements AfterViewInit {
             this._orderService.play()
             break
           }
+          case Action.SPEED: {
+            this._orderService.changeSpeed()
+            break
+          }
           case Action.STOP: {
             this._orderService.stop()
             break

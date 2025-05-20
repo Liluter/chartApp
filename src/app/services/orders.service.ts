@@ -1,4 +1,4 @@
-import { computed, inject, Injectable, Signal, signal, WritableSignal } from '@angular/core';
+import { computed, effect, inject, Injectable, Signal, signal, WritableSignal } from '@angular/core';
 import { OrderBookRecord, SliceData } from '../shared/types/data';
 import jsonData from './../shared/data.json'
 
@@ -22,17 +22,17 @@ export class OrdersService {
   readonly dataSlice: Signal<SliceData | null> = computed(() =>
     (this.data().length > 0 ? this.getOne(this.data()[this.current() - 1]) : null))
   chartRef!: ChartComponent;
-  private globalMaxVolume: number
+  private globalMaxVolume: number = this.globalMaxVolumeValue(this.orderBookRawData)
   private intervalRef: any
   readonly playing = signal(false);
-  readonly volume = signal(false);
+  readonly volumeRangeToggle = signal(false);
+  readonly toggleSpeed: WritableSignal<1 | 2 | 3> = signal(1)
   constructor() {
     this.allLabels()
     this.dataArr$.subscribe(data => {
       this.data.set(data);
       this.chartRef.update()
     })
-    this.globalMaxVolume = this.globalMaxVolumeValue(this.orderBookRawData)
   }
 
   first() {
@@ -62,23 +62,34 @@ export class OrdersService {
   }
 
   play(duration?: number) {
-    const durationTime = duration ?? 300
+    const durationTime = duration ?? 1000
+
     if (!this.intervalRef) {
       if (this.current() < 100) {
         this.playing.set(true)
         this.intervalRef = setInterval(() => {
           if (this.current() < 100) {
             this.current.update(c => c < 100 ? c + 1 : c)
-            this.chartRef?.animate(duration)
+            this.chartRef?.animate(durationTime / this.toggleSpeed())
           } else {
             clearInterval(this.intervalRef)
           }
-        }, durationTime)
+        }, durationTime / this.toggleSpeed())
       }
     } else this.stop()
   }
+
+  changeSpeed() {
+    if (this.intervalRef) {
+      this.playing.set(false)
+      clearInterval(this.intervalRef)
+      this.intervalRef = undefined
+    }
+    this.toggleSpeed.update(speed => speed === 3 ? 1 : speed === 1 ? 2 : 3)
+  }
+
   toggleVolume() {
-    this.volume.update(vol => !this.volume())
+    this.volumeRangeToggle.update(vol => !this.volumeRangeToggle())
     this.chartRef.update()
   }
 
@@ -147,7 +158,7 @@ export class OrdersService {
     } else return {}
   }
   private maxVolumeRange(data: OrderBookRecord) {
-    if (this.volume()) {
+    if (this.volumeRangeToggle()) {
       const minVolume: number = Object.values<number>(this.bidData(data)).sort((a: number, b: number) => a - b)[0]
       const maxVolume: number = Object.values<number>(this.askData(data)).sort((a: number, b: number) => b - a)[0]
       const theMax = Math.max(minVolume * -1, maxVolume)
@@ -156,7 +167,7 @@ export class OrdersService {
       return this.globalMaxVolume
     }
   }
-  private globalMaxVolumeValue(rawData: OrderBookRecord[]) {
+  private globalMaxVolumeValue(rawData: OrderBookRecord[]): number {
     const askVolumes: number[] = []
     const bidVolumes: number[] = []
     rawData.forEach(data => {
