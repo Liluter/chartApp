@@ -39,6 +39,11 @@ export class AppComponent implements AfterViewInit {
             this._orderService.last()
             break
           }
+          case Action.VOLUME: {
+            this._orderService.toggleVolume()
+            break
+          }
+
           case Action.PLAY: {
             this._orderService.play()
             break

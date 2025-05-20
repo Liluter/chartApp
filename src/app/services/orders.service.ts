@@ -7,11 +7,13 @@ import { delay, Observable, of, tap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ajax } from 'rxjs/ajax';
 import { HttpClient } from '@angular/common/http';
+import { MapType } from '@angular/compiler';
 
 @Injectable({
   providedIn: 'root',
 })
 export class OrdersService {
+
   readonly orderBookRawData: OrderBookRecord[] = jsonData
   private dataArr$: Observable<OrderBookRecord[]> = of(this.orderBookRawData).pipe(takeUntilDestroyed(), delay(1000))
 
@@ -20,15 +22,17 @@ export class OrdersService {
   readonly dataSlice: Signal<SliceData | null> = computed(() =>
     (this.data().length > 0 ? this.getOne(this.data()[this.current() - 1]) : null))
   chartRef!: ChartComponent;
+  private globalMaxVolume: number
   private intervalRef: any
   readonly playing = signal(false);
-
+  readonly volume = signal(false);
   constructor() {
     this.allLabels()
     this.dataArr$.subscribe(data => {
       this.data.set(data);
       this.chartRef.update()
     })
+    this.globalMaxVolume = this.globalMaxVolumeValue(this.orderBookRawData)
   }
 
   first() {
@@ -72,6 +76,10 @@ export class OrdersService {
         }, durationTime)
       }
     } else this.stop()
+  }
+  toggleVolume() {
+    this.volume.update(vol => !this.volume())
+    this.chartRef.update()
   }
 
   stop() {
@@ -139,11 +147,37 @@ export class OrdersService {
     } else return {}
   }
   private maxVolumeRange(data: OrderBookRecord) {
-    const minVolume: number = Object.values<number>(this.bidData(data)).sort((a: number, b: number) => a - b)[0]
-    const maxVolume: number = Object.values<number>(this.askData(data)).sort((a: number, b: number) => b - a)[0]
-    const theMax = Math.max(minVolume * -1, maxVolume)
-    return theMax
+    if (this.volume()) {
+      const minVolume: number = Object.values<number>(this.bidData(data)).sort((a: number, b: number) => a - b)[0]
+      const maxVolume: number = Object.values<number>(this.askData(data)).sort((a: number, b: number) => b - a)[0]
+      const theMax = Math.max(minVolume * -1, maxVolume)
+      return theMax
+    } else {
+      return this.globalMaxVolume
+    }
   }
+  private globalMaxVolumeValue(rawData: OrderBookRecord[]) {
+    const askVolumes: number[] = []
+    const bidVolumes: number[] = []
+    rawData.forEach(data => {
+      for (let i = 1; i <= 10; i++) {
+        const askSizeKey = `Ask${i}Size`;
+        const bidSizeKey = `Bid${i}Size`;
+        const askSize = data[askSizeKey];
+        const bidSize = data[bidSizeKey];
+        if (typeof askSize === 'number') {
+          askVolumes.push(askSize);
+        }
+        if (typeof bidSize === 'number') {
+          bidVolumes.push(bidSize);
+        }
+      }
+    }
+    )
+    const globalMaxVolume = Math.max(Math.max(...askVolumes), Math.max(...bidVolumes))
+    return globalMaxVolume
+  }
+
   public timeOnlyFormat(timeString: string | undefined, format: string = 'HH:mm:ss'): string {
     if (!timeString) {
       return '';

@@ -20,5 +20,6 @@ export enum Action {
   PLAY = 'play',
   STOP = 'stop',
   LAST = 'last',
+  VOLUME = 'volume',
   NEXT = 'next',
 }
