@@ -13,29 +13,23 @@ import { OrdersService } from '../../services/orders.service';
 export class ChartComponent {
   @ViewChild(BaseChartDirective) chart: BaseChartDirective<'bar'> | undefined;
   private _orderService = inject(OrdersService)
-  readonly dataSlice: Signal<SliceData | null> = this._orderService.sliceData
+  readonly dataSlice: Signal<SliceData | null> = this._orderService.dataSlice
   readonly currentFrame = this._orderService.current
   public barChartOptions: ChartConfiguration<'bar'>['options'] = {
-    responsive: true,
-    // aspectRatio: 16 / 6,
-    // aspectRatio: 1.2,
     indexAxis: 'y',
-    // animation: {
-    //   duration: 500,
-    //   delay: 50
-    // },
+    animation: {
+      duration: 1500,
+      delay: 50
+    },
     scales: {
     },
     plugins: {
-      title: {
-        display: false,
-        text: 'Order book',
-      },
       legend: { position: 'chartArea' }
     },
   };
   public barChartType = 'bar' as const;
   public barChartData: ChartData<'bar', { [k: string]: number }> = {
+    labels: this.dataSlice()?.labelsData,
     datasets: [{
       label: 'Ask',
       data: {},
@@ -52,10 +46,6 @@ export class ChartComponent {
     if (data) {
       this.barChartOptions = {
         ...this.barChartOptions,
-        animation: {
-          duration: 200,
-          delay: 0
-        },
         scales: {
           x: {
             stacked: true,
@@ -87,34 +77,19 @@ export class ChartComponent {
           }
         }
       }
-      this.barChartData = {
-        ...this.barChartData,
-        labels: data.labelsData,
-        datasets: [{
-          label: 'Ask',
-          data: data.askData,
-          backgroundColor: '#7093DB',
-        },
-        {
-          label: 'Bid',
-          backgroundColor: '#cc3300',
-          data: data.bidData,
-        },
-        ],
-      };
+      this.barChartData.labels = data.labelsData
+      this.barChartData.datasets[0].data = data.askData
+      this.barChartData.datasets[1].data = data.bidData
       this.chart?.update();
     }
   }
 
-  public animate(): void {
+  public animate(duration?: number): void {
+    const durationTime = duration ?? 1600
     const data = this.dataSlice()
     if (data) {
       this.barChartOptions = {
         ...this.barChartOptions,
-        animation: {
-          duration: 300,
-          delay: 0,
-        },
         scales: {
           ...this.barChartOptions?.scales,
           x: {
@@ -134,21 +109,9 @@ export class ChartComponent {
 
         }
       }
-      this.barChartData = {
-        ...this.barChartData,
-        labels: data.labelsData,
-        datasets: [{
-          label: 'Ask',
-          data: data.askData,
-          backgroundColor: '#7093DB',
-        },
-        {
-          label: 'Bid',
-          backgroundColor: '#cc3300',
-          data: data.bidData,
-        },
-        ],
-      };
+      this.barChartOptions.animation = { duration: durationTime }
+      this.barChartData.datasets[0].data = data.askData
+      this.barChartData.datasets[1].data = data.bidData
       this.chart?.update();
     }
   }

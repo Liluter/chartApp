@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, Signal, signal, WritableSignal } from '@angular/core';
 import { OrderBookRecord, SliceData } from '../shared/types/data';
-import data from './../shared/data.json'
+import jsonData from './../shared/data.json'
 
 import { ChartComponent } from '../components/chart/chart.component';
 import { delay, Observable, of, tap } from 'rxjs';
@@ -12,14 +12,12 @@ import { HttpClient } from '@angular/common/http';
   providedIn: 'root',
 })
 export class OrdersService {
-  private Url = ""
-  private _http = inject(HttpClient)
-  readonly dataArr: OrderBookRecord[] = data
-  dataArr$: Observable<OrderBookRecord[]> = of(this.dataArr).pipe(takeUntilDestroyed(), delay(1000))
+  readonly orderBookRawData: OrderBookRecord[] = jsonData
+  private dataArr$: Observable<OrderBookRecord[]> = of(this.orderBookRawData).pipe(takeUntilDestroyed(), delay(1000))
 
   readonly current = signal(1)
   private data: WritableSignal<OrderBookRecord[] | []> = signal([])
-  readonly sliceData: Signal<SliceData | null> = computed(() =>
+  readonly dataSlice: Signal<SliceData | null> = computed(() =>
     (this.data().length > 0 ? this.getOne(this.data()[this.current() - 1]) : null))
   chartRef!: ChartComponent;
   private intervalRef: any
@@ -32,9 +30,6 @@ export class OrdersService {
       this.chartRef.update()
     })
   }
-  getDataMarket(): Observable<OrderBookRecord[]> {
-    return this._http.get<OrderBookRecord[]>(this.Url)
-  }
 
   first() {
     this.current.set(1)
@@ -42,7 +37,7 @@ export class OrdersService {
   }
 
   last() {
-    this.current.set(this.dataArr.length)
+    this.current.set(this.orderBookRawData.length)
     this.chartRef?.update()
   }
 
@@ -62,18 +57,19 @@ export class OrdersService {
     } else this.stop()
   }
 
-  play() {
+  play(duration?: number) {
+    const durationTime = duration ?? 300
     if (!this.intervalRef) {
       if (this.current() < 100) {
         this.playing.set(true)
         this.intervalRef = setInterval(() => {
           if (this.current() < 100) {
             this.current.update(c => c < 100 ? c + 1 : c)
-            this.chartRef?.animate()
+            this.chartRef?.animate(duration)
           } else {
             clearInterval(this.intervalRef)
           }
-        }, 300)
+        }, durationTime)
       }
     } else this.stop()
   }
@@ -169,7 +165,7 @@ export class OrdersService {
     return formattedTime;
   }
   allLabels() {
-    const newLabelsArr = this.dataArr.map(el => this.getLabels(el))
+    const newLabelsArr = this.orderBookRawData.map(el => this.getLabels(el))
     const flated = newLabelsArr.flat()
     const sorted = flated.sort((a, b) => b - a)
     const newSet = new Set(sorted)
