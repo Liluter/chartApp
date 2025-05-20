@@ -89,7 +89,7 @@ export class OrdersService {
   }
 
   toggleVolume() {
-    this.volumeRangeToggle.update(vol => !this.volumeRangeToggle())
+    this.volumeRangeToggle.update(vol => !vol)
     this.chartRef.update()
   }
 
